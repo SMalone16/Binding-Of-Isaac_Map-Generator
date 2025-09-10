@@ -214,6 +214,8 @@ public class Room : MonoBehaviour
             default:
                 break;
         }
+
+        door.SetDirection(direction);
     }
 
     private DoorScriptable GetDoorOptions(RoomType roomType)
