@@ -28,6 +28,7 @@ public class MapGenerator : MonoBehaviour
     public List<Cell> getSpawnedCells => spawnedCells;
 
     private List<int> bigRoomIndexes;
+    private GameObject playerInstance;
 
     [Header("Sprite References")]
     [SerializeField] private Sprite item;
@@ -149,7 +150,7 @@ public class MapGenerator : MonoBehaviour
         endRooms.RemoveAll(item => bigRoomIndexes.Contains(item) || GetNeighbourCount(item) > 1);
     }
 
-    void SetupSpecialRooms() 
+    void SetupSpecialRooms()
     {
         bossRoomIndex = endRooms.Count > 0 ? endRooms[endRooms.Count - 1] : -1;
 
@@ -172,6 +173,18 @@ public class MapGenerator : MonoBehaviour
 
         UpdateSpecialRoomVisuals();
         RoomManager.instance.SetupRooms(spawnedCells);
+        SpawnPlayer();
+    }
+
+    void SpawnPlayer()
+    {
+        if (playerInstance == null)
+        {
+            playerInstance = PlayerController.Create();
+            if (CameraFollow.instance != null)
+                CameraFollow.instance.target = playerInstance.transform;
+        }
+        playerInstance.transform.position = Vector2.zero;
     }
 
     void UpdateSpecialRoomVisuals() 
