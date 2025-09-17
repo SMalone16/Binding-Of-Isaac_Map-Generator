@@ -7,6 +7,7 @@ using UnityEngine.Experimental.AI;
 
 public class MapGenerator : MonoBehaviour
 {
+    private const int startingIndex = 45;
     private int[] floorPlan;
     public int[] getFloorPlan => floorPlan;
 
@@ -28,6 +29,7 @@ public class MapGenerator : MonoBehaviour
     public List<Cell> getSpawnedCells => spawnedCells;
 
     private List<int> bigRoomIndexes;
+    private GameObject playerInstance;
 
     [Header("Sprite References")]
     [SerializeField] private Sprite item;
@@ -110,7 +112,7 @@ public class MapGenerator : MonoBehaviour
         endRooms = new List<int>();
         bigRoomIndexes = new List<int>();
 
-        VisitCell(45);
+        VisitCell(startingIndex);
 
         GenerateDungeon();
     }
@@ -149,7 +151,7 @@ public class MapGenerator : MonoBehaviour
         endRooms.RemoveAll(item => bigRoomIndexes.Contains(item) || GetNeighbourCount(item) > 1);
     }
 
-    void SetupSpecialRooms() 
+    void SetupSpecialRooms()
     {
         bossRoomIndex = endRooms.Count > 0 ? endRooms[endRooms.Count - 1] : -1;
 
@@ -172,6 +174,31 @@ public class MapGenerator : MonoBehaviour
 
         UpdateSpecialRoomVisuals();
         RoomManager.instance.SetupRooms(spawnedCells);
+        SpawnPlayer();
+    }
+
+    void SpawnPlayer()
+    {
+        if (playerInstance == null)
+        {
+            playerInstance = PlayerController.Create();
+            if (CameraFollow.instance != null)
+                CameraFollow.instance.target = playerInstance.transform;
+        }
+        if (!RoomManager.instance.TryGetRoom(startingIndex, out var spawnRoom))
+        {
+            playerInstance.transform.position = Vector2.zero;
+            return;
+        }
+
+        var spawnPosition = spawnRoom.GetSpawnPoint();
+        playerInstance.transform.position = spawnPosition;
+
+        var controller = playerInstance.GetComponent<PlayerController>();
+        controller.SetCurrentRoom(startingIndex);
+
+        RoomManager.instance.MarkStartRoom(startingIndex);
+        RoomManager.instance.NotifyPlayerEntered(startingIndex, controller);
     }
 
     void UpdateSpecialRoomVisuals() 

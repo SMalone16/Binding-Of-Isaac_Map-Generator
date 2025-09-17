@@ -7,6 +7,8 @@ using UnityEngine;
 public class RoomManager : MonoBehaviour
 {
     private List<Room> createdRooms;
+    private Dictionary<int, Room> roomsByCellIndex;
+    private Room currentRoom;
 
     [Header("Offset Variables")]
     public float offsetX;
@@ -26,6 +28,7 @@ public class RoomManager : MonoBehaviour
     {
         instance = this;
         createdRooms = new List<Room>();
+        roomsByCellIndex = new Dictionary<int, Room>();
     }
 
     public void SetupRooms(List<Cell> spawnedCells)
@@ -36,6 +39,8 @@ public class RoomManager : MonoBehaviour
         }
 
         createdRooms.Clear();
+        roomsByCellIndex.Clear();
+        currentRoom = null;
 
         foreach(var currentCell in spawnedCells)
         {
@@ -49,7 +54,49 @@ public class RoomManager : MonoBehaviour
 
             spawnedRoom.SetupRoom(currentCell, foundRoom);
 
+            foreach (var index in currentCell.cellList)
+            {
+                roomsByCellIndex[index] = spawnedRoom;
+            }
+
             createdRooms.Add(spawnedRoom);
+        }
+    }
+
+    public bool TryGetRoom(int cellIndex, out Room room)
+    {
+        return roomsByCellIndex.TryGetValue(cellIndex, out room);
+    }
+
+    public Vector2 GetRoomCenter(int cellIndex)
+    {
+        return roomsByCellIndex.TryGetValue(cellIndex, out var room) ? room.GetSpawnPoint() : Vector2.zero;
+    }
+
+    public void NotifyPlayerEntered(int cellIndex, PlayerController player)
+    {
+        if (!roomsByCellIndex.TryGetValue(cellIndex, out var room))
+            return;
+
+        if (currentRoom == room)
+        {
+            if (room != null)
+            {
+                room.RefreshPlayerReference(player);
+            }
+            return;
+        }
+
+        currentRoom?.OnPlayerExited();
+        currentRoom = room;
+        currentRoom.OnPlayerEntered(player);
+    }
+
+    public void MarkStartRoom(int cellIndex)
+    {
+        if (roomsByCellIndex.TryGetValue(cellIndex, out var room))
+        {
+            room.MarkAsStartRoom();
         }
     }
 
