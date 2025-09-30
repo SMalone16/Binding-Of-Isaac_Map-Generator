@@ -15,6 +15,7 @@ public enum EdgeDirection
 public class Room : MonoBehaviour
 {
     public SpriteRenderer spriteRenderer;
+
     [SerializeField] private bool autoUnlockOnStart = true;
 
     private readonly List<Door> spawnedDoors = new List<Door>();
@@ -28,6 +29,7 @@ public class Room : MonoBehaviour
             UnlockDoors();
         }
     }
+
 
     public void SetupRoom(Cell currentCell, RoomScriptable room)
     {

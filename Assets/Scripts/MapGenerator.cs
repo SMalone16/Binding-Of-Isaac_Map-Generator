@@ -27,6 +27,9 @@ public class MapGenerator : MonoBehaviour
 
     public List<Cell> getSpawnedCells => spawnedCells;
 
+    [Header("Spawn Settings")]
+    [SerializeField] private int startCellIndex = 45;
+
     private List<int> bigRoomIndexes;
     private GameObject playerInstance;
 
@@ -111,7 +114,7 @@ public class MapGenerator : MonoBehaviour
         endRooms = new List<int>();
         bigRoomIndexes = new List<int>();
 
-        VisitCell(45);
+        VisitCell(GetInitialCellIndex());
 
         GenerateDungeon();
     }
@@ -184,7 +187,30 @@ public class MapGenerator : MonoBehaviour
             if (CameraFollow.instance != null)
                 CameraFollow.instance.target = playerInstance.transform;
         }
-        playerInstance.transform.position = Vector2.zero;
+        Cell spawnCell = spawnedCells.FirstOrDefault(cell => cell.cellList.Contains(startCellIndex));
+
+        if (spawnCell == null)
+        {
+            spawnCell = spawnedCells.FirstOrDefault();
+        }
+
+        Vector3 spawnPosition = Vector3.zero;
+
+        if (spawnCell != null)
+        {
+            var spawnAnchor = RoomManager.instance?.GetSpawnAnchor(spawnCell);
+
+            if (spawnAnchor != null)
+            {
+                spawnPosition = spawnAnchor.position;
+            }
+            else
+            {
+                spawnPosition = spawnCell.transform.position;
+            }
+        }
+
+        playerInstance.transform.position = spawnPosition;
     }
 
     void UpdateSpecialRoomVisuals() 
@@ -406,5 +432,20 @@ public class MapGenerator : MonoBehaviour
         newCell.cellList = largeRoomIndexes;
         newCell.cellList.Sort();
         spawnedCells.Add(newCell);
+    }
+
+    private int GetInitialCellIndex()
+    {
+        int candidate = Mathf.Clamp(startCellIndex, 0, floorPlan.Length - 1);
+
+        return IsIndexInBounds(candidate) ? candidate : 45;
+    }
+
+    private static bool IsIndexInBounds(int index)
+    {
+        int x = index % 10;
+        int y = index / 10;
+
+        return x > 0 && x < 9 && y > 0 && y < 9;
     }
 }

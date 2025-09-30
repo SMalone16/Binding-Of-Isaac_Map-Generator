@@ -7,6 +7,7 @@ using UnityEngine;
 public class RoomManager : MonoBehaviour
 {
     private List<Room> createdRooms;
+    private readonly Dictionary<Cell, Room> cellToRoomMap = new();
 
     [Header("Offset Variables")]
     public float offsetX;
@@ -36,6 +37,7 @@ public class RoomManager : MonoBehaviour
         }
 
         createdRooms.Clear();
+        cellToRoomMap.Clear();
 
         foreach(var currentCell in spawnedCells)
         {
@@ -50,7 +52,23 @@ public class RoomManager : MonoBehaviour
             spawnedRoom.SetupRoom(currentCell, foundRoom);
 
             createdRooms.Add(spawnedRoom);
+            cellToRoomMap[currentCell] = spawnedRoom;
         }
+    }
+
+    public Transform GetSpawnAnchor(Cell cell)
+    {
+        if (cell == null)
+        {
+            return null;
+        }
+
+        if (cellToRoomMap.TryGetValue(cell, out var room))
+        {
+            return room.SpawnAnchor;
+        }
+
+        return null;
     }
 
     private bool DoesTileMatchCell(int[] occupiedTiles, Cell cell)
