@@ -2,22 +2,34 @@ using UnityEngine;
 
 public class Door : MonoBehaviour
 {
-    public SpriteRenderer spriteRenderer;
+    [SerializeField] private SpriteRenderer spriteRenderer;
+    [SerializeField] private Sprite closedDoorSprite;
+
     private EdgeDirection direction;
+    private BoxCollider2D boxCollider;
+    private Sprite openDoorSprite;
+
+    public bool isLocked { get; private set; }
 
     private void Awake()
     {
-        var col = GetComponent<Collider2D>();
-        if (col == null)
+        boxCollider = GetComponent<BoxCollider2D>();
+        if (boxCollider == null)
         {
-            var box = gameObject.AddComponent<BoxCollider2D>();
-            box.isTrigger = true;
+            boxCollider = gameObject.AddComponent<BoxCollider2D>();
         }
+
+        boxCollider.isTrigger = true;
     }
 
     public void SetDoorSprite(Sprite door)
     {
-        spriteRenderer.sprite = door;
+        openDoorSprite = door;
+
+        if (!isLocked)
+        {
+            spriteRenderer.sprite = door;
+        }
     }
 
     public void SetDirection(EdgeDirection dir)
@@ -25,8 +37,44 @@ public class Door : MonoBehaviour
         direction = dir;
     }
 
+    public void Lock()
+    {
+        if (isLocked) return;
+
+        isLocked = true;
+
+        if (closedDoorSprite != null)
+        {
+            spriteRenderer.sprite = closedDoorSprite;
+        }
+
+        if (boxCollider != null)
+        {
+            boxCollider.isTrigger = false;
+        }
+    }
+
+    public void Unlock()
+    {
+        if (!isLocked) return;
+
+        isLocked = false;
+
+        if (openDoorSprite != null)
+        {
+            spriteRenderer.sprite = openDoorSprite;
+        }
+
+        if (boxCollider != null)
+        {
+            boxCollider.isTrigger = true;
+        }
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (isLocked) return;
+
         var player = other.GetComponent<PlayerController>();
         if (player == null) return;
 

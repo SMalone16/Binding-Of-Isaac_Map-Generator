@@ -15,9 +15,23 @@ public enum EdgeDirection
 public class Room : MonoBehaviour
 {
     public SpriteRenderer spriteRenderer;
+    [SerializeField] private bool autoUnlockOnStart = true;
+
+    private readonly List<Door> spawnedDoors = new List<Door>();
+
+    private void Start()
+    {
+        LockDoors();
+
+        if (autoUnlockOnStart)
+        {
+            UnlockDoors();
+        }
+    }
 
     public void SetupRoom(Cell currentCell, RoomScriptable room)
     {
+        spawnedDoors.Clear();
         spriteRenderer.sprite = room.roomVariations[Random.Range(0, room.roomVariations.Length)];
 
         if (currentCell.roomType == RoomType.Secret) return;
@@ -187,6 +201,8 @@ public class Room : MonoBehaviour
         door.transform.position = (Vector2)transform.position + positionOffset;
 
         SetupDoor(door, direction, currentCell.roomType == RoomType.Regular ? foundCell.roomType : currentCell.roomType);
+
+        spawnedDoors.Add(door);
     }
 
     private void SetupDoor(Door door, EdgeDirection direction, RoomType roomType)
@@ -216,6 +232,26 @@ public class Room : MonoBehaviour
         }
 
         door.SetDirection(direction);
+    }
+
+    public void LockDoors()
+    {
+        foreach (var door in spawnedDoors)
+        {
+            if (door == null) continue;
+
+            door.Lock();
+        }
+    }
+
+    public void UnlockDoors()
+    {
+        foreach (var door in spawnedDoors)
+        {
+            if (door == null) continue;
+
+            door.Unlock();
+        }
     }
 
     private DoorScriptable GetDoorOptions(RoomType roomType)
