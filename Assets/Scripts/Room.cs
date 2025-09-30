@@ -15,6 +15,9 @@ public enum EdgeDirection
 public class Room : MonoBehaviour
 {
     public SpriteRenderer spriteRenderer;
+    [SerializeField] private Transform spawnAnchor;
+
+    public Transform SpawnAnchor => spawnAnchor;
 
     public void SetupRoom(Cell currentCell, RoomScriptable room)
     {
