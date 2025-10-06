@@ -16,9 +16,12 @@ public class Room : MonoBehaviour
 {
     public SpriteRenderer spriteRenderer;
 
+    [SerializeField] private Transform spawnAnchor;
     [SerializeField] private bool autoUnlockOnStart = true;
 
     private readonly List<Door> spawnedDoors = new List<Door>();
+
+    public Transform SpawnAnchor => spawnAnchor;
 
     private void Start()
     {
