@@ -27,6 +27,8 @@ public class PlayerController : MonoBehaviour
         rb.gravityScale = 0;
         rb.constraints = RigidbodyConstraints2D.FreezeRotation;
         sr = gameObject.AddComponent<SpriteRenderer>();
+        sr.sortingLayerName = "Characters";
+        sr.sortingOrder = 10;
         LoadSprites();
     }
 
